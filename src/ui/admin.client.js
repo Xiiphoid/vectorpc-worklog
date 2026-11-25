@@ -211,7 +211,7 @@ already there.`;
     $('#curl').textContent = `curl -X POST ${s.origin}/api/v1/entries \\
   -H "Authorization: Bearer ${s.api_token}" \\
   -H "Content-Type: application/json" \\
-  -d '{"company":"Bulldog Abrasives","month":"${state.month}","hours":1.5,"description":"Title\\nDetails","project":"bulldogerp"}'`;
+  -d '{"company":"BMS","month":"${state.month}","hours":1.5,"description":"Title\\nDetails","project":"bulldogerp"}'`;
   }
   document.addEventListener('click', async ev => {
     const b = ev.target.closest('[data-copy]'); if (!b) return;

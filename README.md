@@ -1,6 +1,6 @@
 # VectorPC Work Log
 
-Logs billable work per client company (Bulldog Abrasives, RSB and others): a billing month and year (no day), a
+Logs billable work per client company (BMS, Brandchamp, RSB and others): a billing month and year (no day), a
 detailed description, hours and an optional project. Cloudflare Worker + D1 on the Workers Free plan.
 
 | Address | What |

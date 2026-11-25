@@ -9,8 +9,8 @@ Change the company and project on the first two lines.
 
 ```
 ## Work log
-Company: Bulldog Abrasives
-Project: BMS
+Company: BMS
+Project: bulldogerp
 
 After finishing any piece of work in this project, and always after pushing code, log it in the
 "VectorPC Work Log" connector with log_work. Do not ask me first; tell me in one line what you logged.
@@ -31,20 +31,24 @@ Before logging, call list_work for this company (range last-3) and do not log an
 already there.
 ```
 
-## 2. Catch-up prompt (run once in each Bulldog project: everything after the October log)
+## 2. Catch-up prompt (run once in the BMS project and once in the Brandchamp project)
+
+Change the company on the first line to BMS or Brandchamp.
 
 ```
+Company: BMS
+
 Log all the work done in this project that is not in the VectorPC Work Log yet.
 
-1. Call list_work for "Bulldog Abrasives" with range "all" to see what is already logged. The October log
+1. Call list_work for the company above with range "all" to see what is already logged. The October log
    (billing month 2026-10) ends with BMS #47 "Sidebar scrolling fixed on phones, and the fix pushed live" and
-   Brand Champions app #32 "Test site deployments". Everything after those is not logged yet.
+   Brandchamp #32 "Test site deployments". Everything after the last item of this company is not logged yet.
 2. Go through this project's history since then: commits and pull requests (git log with dates), the
    chats in this project, the changelog and the tickets (DEVE numbers). List every distinct piece of
    work finished after those items. Leave out anything already in the log (compare titles and details).
 3. For each piece of work prepare one entry:
-   - company: Bulldog Abrasives
-   - project: BMS or Brand Champions app
+   - company: the company above
+   - project: this repo's name
    - month: the billing month it belongs to, YYYY-MM, from the commit or chat date (South African time).
      Billing months run from the 26th to the 25th: work up to 25 Nov is 2026-11, from 26 Nov 2026-12.
      Entries have a month only, no day.
