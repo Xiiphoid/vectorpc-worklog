@@ -112,6 +112,9 @@ export function adminPage() {
   <div class="panel section"><h3>Instruction for your Claude projects</h3>
   <p>Paste into a project's instructions (or a repo's CLAUDE.md) so work is logged automatically after code is pushed.</p>
   <pre id="snippet"></pre><button class="small" data-copy="snippet">Copy</button></div>
+  <div class="panel section"><h3>Instruction for Claude Code, with your key</h3>
+  <p>Works on its own in Claude Code (VS Code or terminal), no connector needed. Change the first two lines per project. It contains your key: anyone who sees it can log work, so do not put it in a repo other people can see. Not for claude.ai chats (they cannot send data to a URL); use the connector there.</p>
+  <pre id="snippet-api"></pre><button class="small" data-copy="snippet-api">Copy</button></div>
   <div class="panel section"><h3>API for scripts</h3><p>Same token, as a Bearer header.</p><pre id="curl"></pre></div>
   <div class="panel section"><h3>Security</h3><p>A new token disconnects Claude until you update the connector URL. Signing out everywhere ends every signed-in browser.</p>
   <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="danger" id="new-token">New token</button><button id="sign-out-all">Sign out everywhere</button></div></div>

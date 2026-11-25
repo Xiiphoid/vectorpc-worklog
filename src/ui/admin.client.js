@@ -208,6 +208,29 @@ After finishing any piece of work in this project, and always after pushing code
   builder with custom questions and a live preview 28 h.
 Before logging, call list_work for this company (range last-3) and do not log anything that is
 already there.`;
+    $('#snippet-api').textContent = `## Work log
+Company: <CLIENT COMPANY>
+Project: <PROJECT OR REPO>
+
+Work log API: ${s.origin}/api/v1
+API key: ${s.api_token}
+Send the key as the header "Authorization: Bearer <key>". Write JSON bodies to a temp file and send them with
+curl --data @file -H "Content-Type: application/json" (avoids quoting problems).
+- See what is logged: GET /entries?company=<company>&range=last-3   (ranges: this-month, last-month, last-3, this-year, all)
+- Log one item: POST /entries  {"company","month","hours","description","project"}
+- Log many: POST /entries  {"entries":[...]}  (all or nothing; exact duplicates are skipped)
+
+After finishing any piece of work in this project, and always after pushing code, log it for the company
+above. Do not ask me first; tell me in one line what you logged.
+- Check GET /entries for the company (range last-3) first, and do not log anything already there.
+- month: the billing month YYYY-MM. Months run from the 26th to the 25th: work up to 25 Nov is 2026-11,
+  work from 26 Nov is 2026-12 (South African time). No days.
+- one entry per distinct piece of work, not one for the whole session
+- description: first line a short title of what was done, then a line or two of details in plain language
+  the client understands. No passwords, keys, server paths or em dashes.
+- hours: my figure if I give one. Otherwise what a senior developer would need to do the same work by
+  hand without AI (understanding, investigating, designing, coding, testing, deploying, checking).
+  Steps of 0.5, minimum 0.5. Never use how long you took.`;
     $('#curl').textContent = `curl -X POST ${s.origin}/api/v1/entries \\
   -H "Authorization: Bearer ${s.api_token}" \\
   -H "Content-Type: application/json" \\
