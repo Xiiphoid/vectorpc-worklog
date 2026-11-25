@@ -106,6 +106,8 @@ export function adminPage() {
   <div class="panel preview" id="imp-preview"></div></div></div>
 </section>
 <section data-view="settings" hidden>
+  <div class="panel section"><h3>Fill the instructions in for</h3><p>Pick the company and type the project or repo name: the instructions below fill themselves in.</p>
+  <div class="row2"><label class="f">Company<select id="ins-company"></select></label><label class="f">Project or repo<input id="ins-project" placeholder="e.g. bulldogerp"></label></div></div>
   <div class="panel section"><h3>Instruction for Claude Code, with your key</h3>
   <p>Works on its own in Claude Code (VS Code or terminal), no connector needed. Change the first two lines per project. It contains your key: anyone who sees it can log work, so do not put it in a repo other people can see. Not for claude.ai chats (they cannot send data to a URL); use the connector there.</p>
   <pre id="snippet-api"></pre><button class="small" data-copy="snippet-api">Copy</button></div>

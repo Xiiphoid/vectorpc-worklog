@@ -184,8 +184,20 @@ export function client() {
   };
 
   // ---------- settings ----------
+  let insTpl = null;
+  function fillIns() {
+    if (!insTpl) return;
+    const c = $('#ins-company').value || '<CLIENT COMPANY>', p = $('#ins-project').value.trim() || '<PROJECT OR REPO>';
+    const f = t => t.split('<CLIENT COMPANY>').join(c).split('<PROJECT OR REPO>').join(p);
+    $('#snippet').textContent = f(insTpl.a); $('#snippet-api').textContent = f(insTpl.b);
+  }
+  $('#ins-company').onchange = fillIns;
+  $('#ins-project').oninput = fillIns;
   async function loadSettings() {
     const s = await api('/settings');
+    const ic = $('#ins-company'), keep = ic.value;
+    ic.innerHTML = '<option value="">Choose a company</option>' + state.companies.filter(c => !c.archived).map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
+    ic.value = keep;
     $('#mcp-url').value = s.mcp_url;
     $('#snippet').textContent = `## Work log
 Company: <CLIENT COMPANY>
@@ -231,6 +243,8 @@ above. Do not ask me first; tell me in one line what you logged.
 - hours: my figure if I give one. Otherwise what a senior developer would need to do the same work by
   hand without AI (understanding, investigating, designing, coding, testing, deploying, checking).
   Steps of 0.5, minimum 0.5. Never use how long you took.`;
+    insTpl = {a: $('#snippet').textContent, b: $('#snippet-api').textContent};
+    fillIns();
     $('#curl').textContent = `curl -X POST ${s.origin}/api/v1/entries \\
   -H "Authorization: Bearer ${s.api_token}" \\
   -H "Content-Type: application/json" \\
