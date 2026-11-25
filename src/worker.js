@@ -11,12 +11,16 @@ import {handleMcp} from './mcp.js';
 import {loginPage, adminPage} from './ui/admin.js';
 import {reportPage, reportLogin, reportRange, reportData, reportCsv} from './ui/report.js';
 import {hubSso, hubSummary} from './hub.js';
+import {icon192, touch, mark} from './icons.js';
+
+const ICONS = {'/favicon.ico': icon192, '/icon-192.png': icon192, '/apple-touch-icon.png': touch, '/mark.svg': mark};
+const iconResponse = i => new Response(Uint8Array.from(atob(i.b64), c => c.charCodeAt(0)), {headers: {'Content-Type': i.type, 'Cache-Control': 'public, max-age=86400'}});
 
 async function route(req, env, url) {
   const p = url.pathname, m = req.method;
 
   if (p === '/robots.txt') return new Response('User-agent: *\nDisallow: /\n', {headers: {'Content-Type': 'text/plain'}});
-  if (p === '/favicon.ico') return new Response(null, {status: 204});
+  if (ICONS[p]) return iconResponse(ICONS[p]);
   if (p === '/version') return json({name: 'vectorpc-worklog', version: VERSION});
 
   await ensureSchema(env.DB);

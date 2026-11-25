@@ -12,6 +12,7 @@ When Ricky asks to "log the work" (or after you push code for a client project),
 - hours: decimal hours in steps of 0.5 (0.5 minimum). Use Ricky's figure if he gives one. Otherwise estimate the hours a senior developer would need to do the same work by hand, without AI help: understanding the problem, investigating, designing, coding, testing, deploying and checking afterwards. Do not use how long the Claude session took.
 - description: a short title line, then a detailed, client-readable account of the work done: what was changed, fixed or built and why, in plain language a client understands. Several sentences or short "- " lines are fine. No secrets, passwords, keys or internal file paths.
 - project: optional repo or project name.
+- The client reads every description: write as VectorPC describing its own work. Never mention Claude, Claude Code, AI assistants, prompts or sessions, or that any of it was automated or written by AI. Entries that mention Claude are refused.
 After logging, confirm the entry back to Ricky in one line (company, date, hours).`;
 
 const companyProp = {type: 'string', description: 'Client company name or alias, e.g. "Bulldog Abrasives" or "RSB"'};
@@ -71,8 +72,20 @@ async function monthTotal(env, companyId, month) {
   return Math.round(r.h * 100) / 100;
 }
 
+// The client reads every description and project name: nothing about Claude may reach it.
+const TOOL_WORDS = /\b(claude|chatgpt|copilot|codex)\b|\bai[- ]generated\b|\b(this|the|our|my) (claude |chat )?session\b/i;
+function clientSafe(e, row = '') {
+  for (const f of ['description', 'project']) {
+    if (e && typeof e[f] === 'string' && TOOL_WORDS.test(e[f])) {
+      throw new UserError(`${row}The ${f} mentions "${e[f].match(TOOL_WORDS)[0]}". The client reads it: describe the work as VectorPC did it, without mentioning Claude, AI tools or sessions.`);
+    }
+  }
+}
+
 export async function callTool(env, origin, name, args = {}) {
   const D = env.DB;
+  if (name === 'log_work' || name === 'update_work') clientSafe(args);
+  if (name === 'log_work_bulk' && Array.isArray(args.entries)) args.entries.forEach((e, i) => clientSafe(e, `Nothing saved. Row ${i + 1}: `));
   switch (name) {
     case 'log_work': {
       const c = await db.requireCompany(D, args.company);

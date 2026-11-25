@@ -209,6 +209,9 @@ After finishing any piece of work in this project, and always after pushing code
 - month: the billing month (YYYY-MM) the work belongs to; entries have no day. Months run from the
   26th to the 25th: work up to 25 Nov is 2026-11, work from 26 Nov is 2026-12 (South African time)
 - one entry per distinct piece of work, not one entry for the whole session
+- the client reads every description: write it as VectorPC describing its own work. Never mention
+  Claude, Claude Code, AI assistants, prompts, sessions, or that any of it was automated or written by AI.
+  (Features of the client's own system that use AI, like an AI assistant built into their app, are fine.)
 - description: first line a short title of what was done (like "Fixed web emails failing since the PHP
   upgrade"), then a line or two of details in plain language the client understands: what was changed,
   fixed or built and why, and how it was checked. No passwords, keys, server paths or em dashes.
@@ -244,6 +247,9 @@ above. Do not ask me first; tell me in one line what you logged.
 - month: the billing month YYYY-MM. Months run from the 26th to the 25th: work up to 25 Nov is 2026-11,
   work from 26 Nov is 2026-12 (South African time). No days.
 - one entry per distinct piece of work, not one for the whole session
+- the client reads every description: write it as VectorPC describing its own work. Never mention
+  Claude, Claude Code, AI assistants, prompts, sessions, or that any of it was automated or written by AI.
+  (Features of the client's own system that use AI, like an AI assistant built into their app, are fine.)
 - description: first line a short title of what was done, then a line or two of details in plain language
   the client understands. No passwords, keys, server paths or em dashes.
 - hours: my figure if I give one. Otherwise what a senior developer would need to do the same work by

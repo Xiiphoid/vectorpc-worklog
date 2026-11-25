@@ -37,7 +37,7 @@ tr.total td{border-top:2px solid var(--ink);font-weight:780;font-size:15px}.empt
  .stat{border:1px solid var(--line)}th{background:#fff}tr{break-inside:avoid}}`;
 
 const page = (title, inner) => `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="robots" content="noindex,nofollow"><title>${esc(title)}</title><style>${reportCss}</style></head><body>${inner}</body></html>`;
+<meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/png" href="/icon-192.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><title>${esc(title)}</title><style>${reportCss}</style></head><body>${inner}</body></html>`;
 
 // first line as a title, the rest as details
 const descHtml = d => { const i = d.indexOf('\n'); return i < 0 ? esc(d) : `<strong>${esc(d.slice(0, i))}</strong>\n${esc(d.slice(i + 1))}`; };

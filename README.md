@@ -18,6 +18,7 @@ app tile all use it.
 
 | Version | Deployed | Notes |
 |---|---|---|
+| r3 | 25 Nov 2026 | Nothing about Claude reaches a client: entries from Claude or the API that mention Claude, ChatGPT, Copilot, Codex, AI-generated or a session are refused (`clientSafe` in `src/mcp.js`), the instructions say so, and the admin CSV has no Source column. The VectorPC icons (from the app) as the tab icon, home screen icon, bar and sign-in logo (`src/icons.js`). |
 | r2 | 25 Nov 2026 | The VectorPC bar on top of the admin page (back to the app, Apps menu), as in the other VectorPC apps: `src/vpxbar.js` and `src/vpxstyle.js` are copies of the canonical ones in vectorpc-cloud-panel `manager/` (keep identical). Settings: pick a company and project to fill the Claude instructions in; the instruction with the API key comes first and includes catching up from where the log ends; the connector is an optional closed section. |
 | r1 | 25 Nov 2026 | First version. |
 

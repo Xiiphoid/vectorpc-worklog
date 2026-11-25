@@ -1,7 +1,7 @@
 // Admin pages: sign-in and the single-page work log editor (Work, Companies, Import, Settings).
 import {esc} from '../util.js';
 import {client} from './admin.client.js';
-import {vpxBar, VPX_HOME} from '../vpxbar.js';
+import {vpxBar} from '../vpxbar.js';
 import {vpxCss, vpxJs} from '../vpxstyle.js';
 
 const css = `:root{color-scheme:dark;--ink:#f4f4f5;--muted:#a1a1aa;--faint:#71717a;--line:#322f34;--card:#1c1b1e;--card2:#232126;--bg:#131315;--accent:#14c3be;--accent2:#0aa8a4;--red:#fca5a5;--amber:#fcd34d;--green:#6ee7b7;--grad:linear-gradient(135deg,#14c3be,#0aa8a4)}
@@ -65,11 +65,11 @@ pre{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding
  .company{grid-template-columns:1fr}.company .acts{justify-content:flex-start}.row2{grid-template-columns:1fr}.tabs{width:100%}}`;
 
 const head = title => `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#131315"><title>${esc(title)}</title><style>${css}${vpxCss}</style></head>`;
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#131315"><link rel="icon" type="image/png" href="/icon-192.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><title>${esc(title)}</title><style>${css}${vpxCss}</style></head>`;
 
 export function loginPage({error = '', notConfigured = false} = {}) {
   return `${head('Sign in · VectorPC Work Log')}<body><form class="panel login" method="post" action="/login">
-<div class="wordmark">VectorPC <span>Work Log</span></div><p>Sign in to log and manage work.</p>
+<div class="wordmark" style="display:flex;align-items:center;gap:10px"><img src="/mark.svg" alt="" width="32" height="32" style="border-radius:9px">VectorPC <span>Work Log</span></div><p>Sign in to log and manage work.</p>
 ${notConfigured ? `<p class="msg bad">No password is set yet. In Cloudflare, open this Worker, Settings, Variables and Secrets, and add a secret called ADMIN_PASSWORD (at least 8 characters).</p>` : ''}
 ${error ? `<p class="msg bad">${esc(error)}</p>` : ''}
 <input name="username" autocomplete="username" placeholder="Username" required autofocus autocapitalize="none">
@@ -79,7 +79,7 @@ ${error ? `<p class="msg bad">${esc(error)}</p>` : ''}
 
 export function adminPage() {
   return `${head('VectorPC Work Log')}<body>
-${vpxBar({app: 'Work Log', appHref: '/', mark: VPX_HOME + '/assets/icons/mark.svg?v=2', slot: '<a class="signout" href="/logout">Sign out</a>'})}
+${vpxBar({app: 'Work Log', appHref: '/', mark: '/mark.svg', slot: '<a class="signout" href="/logout">Sign out</a>'})}
 <header class="topbar"><div class="in"><nav class="tabs" role="tablist"><button role="tab" data-tab="work" aria-selected="true">Work</button><button role="tab" data-tab="companies">Companies</button><button role="tab" data-tab="import">Import</button><button role="tab" data-tab="settings">Settings</button></nav>
 </div></header>
 <main>

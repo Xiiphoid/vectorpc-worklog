@@ -18,6 +18,9 @@ After finishing any piece of work in this project, and always after pushing code
 - month: the billing month (YYYY-MM) the work belongs to; entries have no day. Months run from the
   26th to the 25th: work up to 25 Nov is 2026-11, work from 26 Nov is 2026-12 (South African time)
 - one entry per distinct piece of work, not one entry for the whole session
+- the client reads every description: write it as VectorPC describing its own work. Never mention
+  Claude, Claude Code, AI assistants, prompts, sessions, or that any of it was automated or written by AI.
+  (Features of the client's own system that use AI, like an AI assistant built into their app, are fine.)
 - description: first line a short title of what was done (like "Fixed web emails failing since the PHP
   upgrade"), then a line or two of details in plain language the client understands: what was changed,
   fixed or built and why, and how it was checked. No passwords, keys, server paths or em dashes.
@@ -46,8 +49,8 @@ Company: BMS
 
 Log all the work done in this project that is not in the VectorPC Work Log yet.
 
-1. Call list_work for the company above with range "all" to see what is already logged. The October log
-   (billing month 2026-10) ends with BMS #47 "Sidebar scrolling fixed on phones, and the fix pushed live" and
+1. Call list_work for the company above with range "all" to see what is already logged. The first log
+   (billing month 2026-11) ends with BMS #47 "Sidebar scrolling fixed on phones, and the fix pushed live" and
    Brandchamp #32 "Test site deployments". Everything after the last item of this company is not logged yet.
 2. Go through this project's history since then: commits and pull requests (git log with dates), the
    chats in this project, the changelog and the tickets (DEVE numbers). List every distinct piece of
@@ -62,7 +65,7 @@ Log all the work done in this project that is not in the VectorPC Work Log yet.
      plain client language like the October "Details" column. No passwords, keys, server paths or em dashes.
    - hours: what a senior developer would need to do it by hand without AI (understanding, investigating,
      designing, coding, testing, deploying, checking). Steps of 0.5, minimum 0.5. Calibrate against the
-     October items already in the log (list_work shows them with their hours). Never use how long you took.
+     items already in the log (list_work shows them with their hours). Never use how long you took.
 4. Show me the list as a table (month, project, title, hours) with the total per month, and wait
    for my OK.
 5. When I say OK, save them all with one log_work_bulk call, then tell me how many were saved and the

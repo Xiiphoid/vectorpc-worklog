@@ -47,6 +47,8 @@ const cookie = setc.split(';')[0];
 const H = {Cookie: cookie, Origin: B, 'Content-Type': 'application/json'};
 const page = await (await req('/', {headers: {Cookie: cookie}})).text();
 t('admin page loads with the VectorPC bar', page.includes('class="vpx-bar"') && page.includes('>Work Log</a>') && page.includes('https://app.vectorpc.co.za/') && page.includes('id="entries"'));
+const ic = await req('/icon-192.png'), mkSvg = await req('/mark.svg');
+t('the VectorPC icons are served', ic.status === 200 && ic.headers.get('Content-Type') === 'image/png' && (await ic.arrayBuffer()).byteLength === 11128 && mkSvg.status === 200 && (await mkSvg.text()).includes('<svg') && page.includes('rel="icon"'));
 const script = [...page.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]).join(';\n');
 const dir = mkdtempSync(join(tmpdir(), 'wl-'));
 writeFileSync(join(dir, 'c.js'), script);
@@ -88,7 +90,7 @@ t('a month range filters by billing month', nov.count === 1 && nov.total_hours =
 const st = await api('/state');
 t('the filters are named for billing months', /^This month: \w+ \d{4}$/.test(st.labels['this-month']) && /^\d{4}-\d{2}$/.test(st.month));
 const csv = await (await req('/admin/api/entries.csv?range=all', {headers: {Cookie: cookie}})).text();
-t('CSV download has the months, rows and a total', csv.includes('November 2026,Bulldog Abrasives,1.5,Fixed the sidebar on phones') && /Total,,3\.75/.test(csv), csv.slice(0, 300));
+t('CSV download has the months, rows and a total, no Source column', csv.includes('November 2026,Bulldog Abrasives,1.5,Fixed the sidebar on phones,bulldogerp') && /Total,,3\.75/.test(csv) && !/Source|manual/.test(csv), csv.slice(0, 300));
 
 // ---------- import (the October Bulldog sheet shape: no dates, one month for all) ----------
 const rows = [{company: 'Bulldog Abrasives', month: '2026-10', hours: 5, description: 'Moved the live BMS to /bms/.\nPlanned the cutover', project: 'BMS'},
@@ -116,6 +118,13 @@ const lw = await rpc('tools/call', {name: 'log_work', arguments: {company: 'bull
 t('log_work finds "bulldog" by alias and reports the billing month', !lw.result.isError && /Bulldog Abrasives/.test(lw.result.content[0].text) && /in November 2026 \(26 Oct to 25 Nov\).*November 2026: 4\.50 h/.test(lw.result.content[0].text), lw.result.content[0].text);
 const lw2 = await rpc('tools/call', {name: 'log_work', arguments: {company: 'Acme', hours: 1, description: 'x'}});
 t('log_work refuses an unknown company and lists the real ones', lw2.result.isError && /Existing companies: .*Bulldog Abrasives.*RSB/.test(lw2.result.content[0].text));
+const cl = await rpc('tools/call', {name: 'log_work', arguments: {company: 'RSB', hours: 1, description: 'Built the export with Claude Code'}});
+t('a description that mentions Claude is refused', cl.result.isError && /Claude Code|claude/i.test(cl.result.content[0].text) && /client reads it/.test(cl.result.content[0].text));
+const cl2 = await rpc('tools/call', {name: 'log_work', arguments: {company: 'RSB', hours: 1, description: 'Charlie AI assistant: answers about debtors'}});
+t('an AI feature of the client\'s own system is fine', !cl2.result.isError);
+await rpc('tools/call', {name: 'delete_work', arguments: {id: cl2.result.structuredContent.entry.id}});
+const rcl = await req('/api/v1/entries', {method: 'POST', headers: {Authorization: 'Bearer ' + (await api('/settings')).api_token, 'Content-Type': 'application/json'}, body: JSON.stringify({entries: [{company: 'RSB', hours: 1, description: 'ok'}, {company: 'RSB', hours: 1, description: 'Done in this Claude session'}]})});
+t('the API refuses it too, all or nothing', rcl.status === 400 && (j => /Row 2/.test(j.error || j.message || ''))(await rcl.json()));
 const ls = await rpc('tools/call', {name: 'list_work', arguments: {company: 'RSB', range: 'all'}});
 t('list_work works', !ls.result.isError && ls.result.structuredContent.count === 0);
 const lc = await rpc('tools/call', {name: 'list_companies', arguments: {}});

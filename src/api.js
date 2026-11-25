@@ -32,9 +32,10 @@ export async function adminApi(req, env, url) {
   if (path === '/entries.csv' && m === 'GET') {
     const sp = url.searchParams, {from, to} = rangeFrom(sp);
     const r = await db.listEntries(D, {companyId: sp.get('company') || null, from, to, q: sp.get('q') || '', limit: 5000});
-    const lines = [['Month', 'Company', 'Hours', 'Description', 'Project', 'Source'].join(',')]
-      .concat(r.entries.map(e => [monthName(e.month), e.company, e.hours, e.description, e.project, e.source].map(csvCell).join(',')));
-    lines.push(['Total', '', r.total_hours, '', '', ''].map(csvCell).join(','));
+    // no Source column: this file may be sent to a client
+    const lines = [['Month', 'Company', 'Hours', 'Description', 'Project'].join(',')]
+      .concat(r.entries.map(e => [monthName(e.month), e.company, e.hours, e.description, e.project].map(csvCell).join(',')));
+    lines.push(['Total', '', r.total_hours, '', ''].map(csvCell).join(','));
     return new Response('﻿' + lines.join('\r\n'), {headers: {'Content-Type': 'text/csv; charset=utf-8',
       'Content-Disposition': `attachment; filename="worklog-${from || 'start'}-${to || currentMonth()}.csv"`, 'Cache-Control': 'no-store'}});
   }
