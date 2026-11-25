@@ -65,23 +65,40 @@ export function client() {
       entries = r.entries;
       $('#s-hours').innerHTML = fmt(r.total_hours) + ' <small>h</small>';
       $('#s-count').textContent = r.count;
+      $('#s-avg').innerHTML = r.count ? fmt(r.total_hours / r.count) + ' <small>h</small>' : '0';
+      // dashboard: by company (click to filter) and the largest items (click to open)
       const by = {};
-      for (const e of entries) by[e.company] = (by[e.company] || 0) + e.hours;
-      const names = Object.keys(by).sort((a, b) => by[b] - by[a]);
-      $('#s-by').innerHTML = !$('#f-company').value && names.length > 1 ? names.map(n => `<span class="chip">${esc(n)} <b>${fmt(by[n])} h</b></span>`).join('') : '';
+      for (const e of entries) { const b = by[e.company] || (by[e.company] = {id: e.company_id, n: 0, h: 0, items: []}); b.n++; b.h += e.hours; b.items.push(e); }
+      const names = Object.keys(by).sort((a, b) => by[b].h - by[a].h);
+      const one = !!$('#f-company').value;
+      const title = d => d.split('\n')[0].replace(/\.$/, '');
+      $('#dash').innerHTML = !entries.length ? '' : (one ? '' : `<section class="panel dash"><h2>By company</h2><table class="by"><thead><tr><th>Company</th><th class="n">Items</th><th class="n">Hours</th><th class="share">Share</th><th class="n">Avg per item</th></tr></thead><tbody>`
+        + names.map(n => { const b = by[n], pct = r.total_hours ? b.h / r.total_hours * 100 : 0;
+          return `<tr><td><a class="dash-co" data-co="${b.id}">${esc(n)}</a></td><td class="n">${b.n}</td><td class="n"><b>${fmt(b.h)}</b></td><td class="share"><span class="sbar"><i style="width:${pct.toFixed(1)}%"></i></span><span class="pct">${pct.toFixed(0)}%</span></td><td class="n">${fmt(b.h / b.n)}</td></tr>`; }).join('')
+        + `<tr class="sum"><td>Total</td><td class="n">${r.count}</td><td class="n"><b>${fmt(r.total_hours)}</b></td><td class="share"></td><td class="n">${fmt(r.total_hours / r.count)}</td></tr></tbody></table></section>`)
+        + `<section class="panel dash"><h2>Largest items</h2><div class="tops">` + names.map(n => `<div class="topcol"><h3>${one ? '' : `<a class="dash-co" data-co="${by[n].id}">${esc(n)}</a>`}</h3><ol>`
+          + by[n].items.slice().sort((a, b) => b.hours - a.hours).slice(0, 5).map(e => `<li><a data-go="${e.id}"><span class="t">${esc(title(e.description))}</span><b>${fmt(e.hours)} h</b></a></li>`).join('') + '</ol></div>').join('') + '</div></section>';
+      // the list: one line per item, tap for the details
       const perMonth = {};
       for (const e of entries) perMonth[e.month] = (perMonth[e.month] || 0) + e.hours;
       let lastM = '';
-      $('#entries').innerHTML = entries.length ? entries.map(e => `${e.month !== lastM ? (lastM = e.month, `<div class="mhead"><span><b>${mName(e.month)}</b> · ${mRange(e.month)}</span><b>${fmt(perMonth[e.month])} h</b></div>`) : ''}<div class="entry" data-id="${e.id}">
-        <div class="body"><div class="c">${esc(e.company)}</div><div class="t">${desc(e.description)}</div>${e.project ? `<span class="tag">${esc(e.project)}</span>` : ''}${e.source !== 'manual' ? `<span class="tag ${e.source}">${e.source === 'claude' ? 'Claude' : e.source === 'import' ? 'Imported' : 'API'}</span>` : ''}</div>
-        <div class="h">${fmt(e.hours)} h</div></div>`).join('') + (r.truncated ? `<div class="empty">Showing the latest ${entries.length} of ${r.count}. Narrow the dates to see the rest.</div>` : '')
+      const src = e => e.source === 'manual' ? '' : `<span class="tag ${e.source}">${e.source === 'claude' ? 'Logged by Claude' : e.source === 'import' ? 'Imported' : 'API'}</span>`;
+      $('#entries').innerHTML = entries.length ? entries.map(e => { const i = e.description.indexOf('\n'), more = i < 0 ? '' : e.description.slice(i + 1);
+        return `${e.month !== lastM ? (lastM = e.month, `<div class="mrow"><span>${mName(e.month)} · ${mRange(e.month)}</span><b>${fmt(perMonth[e.month])} h</b></div>`) : ''}<details class="item" id="e${e.id}"><summary><span class="t">${esc(title(e.description))}</span>${one ? '' : `<span class="co">${esc(e.company)}</span>`}<b class="h">${fmt(e.hours)}</b></summary>`
+          + `<div class="more">${more ? `<p>${esc(more)}</p>` : ''}${e.project ? `<span class="tag">${esc(e.project)}</span>` : ''}${src(e)}<button class="small" data-edit="${e.id}" style="float:right">Edit</button></div></details>`; }).join('')
+        + (r.truncated ? `<div class="empty">Showing the latest ${entries.length} of ${r.count}. Narrow the dates to see the rest.</div>` : '')
         : '<div class="empty">No work logged for this selection.</div>';
     } catch (e) { $('#entries').innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
   }
   let qTimer;
   $('#f-q').oninput = () => { clearTimeout(qTimer); qTimer = setTimeout(loadEntries, 250); };
   ['#f-company', '#f-range', '#f-from', '#f-to'].forEach(s => $(s).onchange = loadEntries);
-  $('#entries').onclick = ev => { const row = ev.target.closest('.entry'); if (row) openEntry(entries.find(e => e.id === Number(row.dataset.id))); };
+  $('#entries').onclick = ev => { const b = ev.target.closest('[data-edit]'); if (b) openEntry(entries.find(e => e.id === Number(b.dataset.edit))); };
+  $('#dash').onclick = ev => {
+    const co = ev.target.closest('[data-co]'), go = ev.target.closest('[data-go]');
+    if (co) { $('#f-company').value = co.dataset.co; loadEntries(); window.scrollTo({top: 0, behavior: 'smooth'}); }
+    if (go) { const d = document.getElementById('e' + go.dataset.go); if (d) { d.open = true; d.scrollIntoView({block: 'center', behavior: 'smooth'}); d.classList.add('flash'); setTimeout(() => d.classList.remove('flash'), 1600); } }
+  };
 
   // ---------- entry dialog ----------
   const dlg = $('#entry-dlg'), form = $('#entry-form');
@@ -127,7 +144,21 @@ export function client() {
   };
 
   // ---------- companies ----------
+  async function loadClientLink() {
+    const c = await api('/client-link');
+    $('#cl-url').value = c.url; $('#cl-open').href = c.url;
+    $('#cl-state').textContent = c.has_password ? 'Asks for a password. Type a new one to change it.' : 'No password: anyone with the link can view it.';
+    $('#cl-clear').hidden = !c.has_password;
+  }
+  $('#cl-save').onclick = async () => { const p = $('#cl-pw').value; if (!p) return; try { await api('/client-link', {method: 'POST', body: JSON.stringify({client_password: p})}); $('#cl-pw').value = ''; toast('Password set'); loadClientLink(); } catch (e) { toast(e.message); } };
+  $('#cl-clear').onclick = async () => { await api('/client-link', {method: 'POST', body: JSON.stringify({client_password: ''})}); toast('Password removed'); loadClientLink(); };
+  $('#cl-new').onclick = async () => {
+    const b = $('#cl-new');
+    if (!b.dataset.sure) { b.dataset.sure = '1'; b.textContent = 'Old link stops working. Tap again'; setTimeout(() => { delete b.dataset.sure; b.textContent = 'New link'; }, 3500); return; }
+    await api('/client-link', {method: 'POST', body: JSON.stringify({new_link: true})}); toast('New client link made'); loadClientLink();
+  };
   function renderCompanies() {
+    if (!$('[data-view=companies]').hidden) loadClientLink().catch(() => {});
     $('#companies').innerHTML = state.companies.length ? state.companies.map(c => `<div class="company${c.archived ? ' archived' : ''}" data-id="${c.id}">
       <div><div class="n">${esc(c.name)}${c.archived ? ' <span class="tag">Archived</span>' : ''}</div>
       <div class="s">${c.aliases ? 'Also: ' + esc(c.aliases) + ' · ' : ''}${fmt(c.total_hours)} h in ${c.entry_count} entries${c.last_month ? ' · last ' + mName(c.last_month) : ''}${c.has_password ? ' · client page has a password' : ''}</div></div>

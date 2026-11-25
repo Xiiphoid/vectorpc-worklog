@@ -2,7 +2,7 @@
 //   /                admin (username + password)          /r/<link>      client report (read only)
 //   /mcp/<token>     MCP connector for Claude             /api/v1/*      REST, Bearer token
 //   /sso, /api/hub-summary   VectorPC app (app.vectorpc.co.za) sign-in and tile
-import {ensureSchema, companyByToken} from './db.js';
+import {ensureSchema, companyByToken, getMeta} from './db.js';
 import {UserError, json, html, redirect, VERSION} from './util.js';
 import {isAdmin, checkLogin, issueAdminCookie, clearAdminCookie, passwordConfigured, sameOrigin, apiTokenValid,
   reportUnlocked, reportCookie, checkReportPassword} from './auth.js';
@@ -43,7 +43,14 @@ async function route(req, env, url) {
 
   // ---- client report ----
   if ((mm = p.match(/^\/r\/([A-Za-z0-9_-]{20,64})(\/csv)?\/?$/))) {
-    const company = await companyByToken(env.DB, mm[1]);
+    // a company's own link, or the client link that shows every company
+    let company = await companyByToken(env.DB, mm[1]), scope;
+    if (company) scope = {companies: [company]};
+    else if (mm[1] === await getMeta(env.DB, 'client_token')) {
+      const {results} = await env.DB.prepare('SELECT id, name FROM companies WHERE archived=0 ORDER BY name COLLATE NOCASE').all();
+      company = {id: 0, name: 'All companies', share_token: mm[1], client_password: await getMeta(env.DB, 'client_password') || null};
+      scope = {companies: results};
+    }
     if (!company) return html('<!doctype html><meta name="viewport" content="width=device-width"><p style="font-family:system-ui;padding:40px;text-align:center;color:#64748b">This link is not valid. Ask VectorPC for a new one.</p>', 404);
     const base = `/r/${company.share_token}`;
     if (m === 'POST' && !mm[2]) {
@@ -54,9 +61,9 @@ async function route(req, env, url) {
     }
     if (m !== 'GET') return json({error: 'Method not allowed'}, 405);
     if (!await reportUnlocked(req, env, company)) return mm[2] ? redirect(base) : html(reportLogin(company));
-    const range = reportRange(url);
-    const data = await reportData(env, company, range);
-    return mm[2] ? reportCsv(company, range, data) : html(reportPage(company, range, data, base));
+    const range = reportRange(url, scope);
+    const data = await reportData(env, scope, range);
+    return mm[2] ? reportCsv(scope, range, data) : html(reportPage(scope, range, data, base));
   }
 
   // ---- admin ----

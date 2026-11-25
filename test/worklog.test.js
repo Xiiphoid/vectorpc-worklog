@@ -143,7 +143,7 @@ t('REST refuses a wrong token', (await req('/api/v1/companies', {headers: {Autho
 // ---------- client report ----------
 const link = new URL(c1.company.report_url).pathname;
 const rp = await (await req(link + '?from=2026-10&to=2026-12')).text();
-t('client report shows the company, entries and total', rp.includes('Bulldog Abrasives') && rp.includes('Moved the live BMS to /bms/.') && rp.includes('36.75') && !rp.includes('<td class="d"'), rp.match(/Total hours[\s\S]{0,120}/)?.[0]);
+t('client report shows the company, entries and total', rp.includes('Bulldog Abrasives') && rp.includes('Moved the live BMS to /bms/<') && rp.includes('36.75') && !rp.includes('<td class="d"'), rp.match(/Total hours[\s\S]{0,120}/)?.[0]);
 t('client report groups by billing month, no days', rp.includes('October 2026 (26 Sep to 25 Oct)') && rp.includes('November 2026 (26 Oct to 25 Nov)') && rp.includes('December 2026 (26 Nov to 25 Dec)') && !/\d{1,2} (Oct|Nov) 2026</.test(rp));
 t('client report does not show other companies', !rp.includes('Server patching'));
 const rcsv = await (await req(link + '/csv?range=all')).text();
@@ -161,6 +161,24 @@ const unlocked = await (await req(rsbLink + '?range=all', {headers: {Cookie: rc}
 t('right client password opens it', rightPw.status === 303 && unlocked.includes('Server patching'));
 const nl = await api('/companies/' + c2.company.id, 'PUT', {new_link: true});
 t('a new link retires the old one', (await req(rsbLink)).status === 404 && nl.company.share_token !== c2.company.share_token);
+
+// ---------- the client link with every company, and the dashboard ----------
+const cl0 = await api('/client-link');
+const allPath = new URL(cl0.url).pathname;
+const all = await (await req(allPath + '?range=all')).text();
+t('the client link shows every company with totals per company', all.includes('<h2>By company</h2>') && all.includes('>Bulldog Abrasives</a>') && all.includes('>RSB</a>') && all.includes('Server patching') && all.includes('Largest items'));
+t('items are one line each, details on tap', /<details class="item" id="e\d+"><summary><span class="t">Moved the live BMS to \/bms\/<\/span><span class="co">Bulldog Abrasives<\/span>/.test(all) && all.includes('<p>Planned the cutover</p>'));
+t('largest items link to the item', /href="#e\d+" data-open="e\d+"><span class="t">DEVE0067: Marketing request forms<\/span><b>28\.00 h/.test(all));
+const onlyRsb = await (await req(allPath + '?range=all&company=' + c2.company.id)).text();
+t('a company can be picked on the client link', onlyRsb.includes('Server patching') && !onlyRsb.includes('Moved the live BMS') && !onlyRsb.includes('<h2>By company</h2>'));
+const allCsv = await (await req(allPath + '/csv?range=all')).text();
+t('the client link CSV has a Company column', allCsv.replace(/^\uFEFF/, '').startsWith('Month,Company,Description,Project,Hours') && allCsv.includes('RSB,Server patching'));
+await api('/client-link', 'POST', {client_password: 'all-secret'});
+t('a password on the client link hides it', (await (await req(allPath)).text()).includes('type="password"'));
+const allOk = await req(allPath, form({password: 'all-secret'}));
+t('...and the right password opens it', allOk.status === 303 && (await (await req(allPath + '?range=all', {headers: {Cookie: (allOk.headers.get('Set-Cookie') || '').split(';')[0]}})).text()).includes('Server patching'));
+const cl1 = await api('/client-link', 'POST', {new_link: true});
+t('a new client link retires the old one', cl1.url !== cl0.url && (await req(allPath)).status === 404);
 
 // ---------- VectorPC app ----------
 t('tile details need a signed pass', (await req('/api/hub-summary', {headers: {'X-Hub-Token': 'x'}})).status === 401);

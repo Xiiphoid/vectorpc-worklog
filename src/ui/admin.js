@@ -3,6 +3,7 @@ import {esc} from '../util.js';
 import {client} from './admin.client.js';
 import {vpxBar} from '../vpxbar.js';
 import {vpxCss, vpxJs} from '../vpxstyle.js';
+import {dashCss} from './dash.js';
 
 const css = `:root{color-scheme:dark;--ink:#f4f4f5;--muted:#a1a1aa;--faint:#71717a;--line:#322f34;--card:#1c1b1e;--card2:#232126;--bg:#131315;--accent:#14c3be;--accent2:#0aa8a4;--red:#fca5a5;--amber:#fcd34d;--green:#6ee7b7;--grad:linear-gradient(135deg,#14c3be,#0aa8a4)}
 *{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
@@ -65,7 +66,7 @@ pre{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding
  .company{grid-template-columns:1fr}.company .acts{justify-content:flex-start}.row2{grid-template-columns:1fr}.tabs{width:100%}}`;
 
 const head = title => `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#131315"><link rel="icon" type="image/png" href="/icon-192.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><title>${esc(title)}</title><style>${css}${vpxCss}</style></head>`;
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#131315"><link rel="icon" type="image/png" href="/icon-192.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><title>${esc(title)}</title><style>${css}${vpxCss}${dashCss}</style></head>`;
 
 export function loginPage({error = '', notConfigured = false} = {}) {
   return `${head('Sign in · VectorPC Work Log')}<body><form class="panel login" method="post" action="/login">
@@ -90,12 +91,17 @@ ${vpxBar({app: 'Work Log', appHref: '/', mark: '/mark.svg', slot: '<a class="sig
     <input id="f-q" class="q" type="search" placeholder="Search descriptions" aria-label="Search">
     <div class="custom"><label class="f">From month<input id="f-from" type="month" placeholder="2026-10"></label><label class="f">To month<input id="f-to" type="month" placeholder="2026-11"></label></div>
   </div>
-  <div class="stats"><div class="panel stat"><div class="k">Total hours</div><div class="v" id="s-hours">0</div></div><div class="panel stat"><div class="k">Entries</div><div class="v" id="s-count">0</div></div></div>
-  <div class="chips" id="s-by"></div>
-  <div class="bar"><h2 id="list-title">Work</h2><span class="spacer"></span><a id="csv" class="small" href="#" style="font-size:13px">Download CSV</a><button class="primary" id="add-entry">+ Log work</button></div>
+  <div class="stats"><div class="panel stat"><div class="k">Total hours</div><div class="v" id="s-hours">0</div></div><div class="panel stat"><div class="k">Items</div><div class="v" id="s-count">0</div></div><div class="panel stat"><div class="k">Avg per item</div><div class="v" id="s-avg">0</div></div></div>
+  <div id="dash"></div>
+  <div class="bar"><h2 id="list-title">All work</h2><span class="spacer"></span><a id="csv" class="small" href="#" style="font-size:13px">Download CSV</a><button class="primary" id="add-entry">+ Log work</button></div>
   <div class="panel list" id="entries"><div class="empty">Loading…</div></div>
 </section>
 <section data-view="companies" hidden>
+  <div class="panel section"><h3>Client link (every company)</h3><p>One page for the client with all the companies: the dashboard, totals per company and every item. Each company below also has its own link.</p>
+  <div class="copy"><input id="cl-url" readonly aria-label="Client link"><button class="small" data-copy="cl-url">Copy</button><a class="small" id="cl-open" target="_blank" rel="noopener" style="align-self:center;font-size:12.5px">Open</a></div>
+  <p class="hint" id="cl-state" style="margin:10px 0 6px"></p>
+  <div class="copy"><input id="cl-pw" type="text" autocomplete="off" placeholder="New client password (optional)"><button class="small" id="cl-save">Set</button></div>
+  <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="small" id="cl-clear" hidden>Remove password</button><button class="small danger" id="cl-new">New link</button></div></div>
   <div class="bar"><h2>Companies</h2><span class="spacer"></span><button class="primary" id="add-company">+ Add company</button></div>
   <p class="hint" style="margin:-4px 0 12px">Work is logged per billing month (26th to 25th), without days. Each company has its own private report link for the client. Aliases are other names it goes by (so "log this for RSB" finds it).</p>
   <div class="panel list" id="companies"></div>

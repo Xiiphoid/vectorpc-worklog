@@ -1,7 +1,7 @@
 // D1 schema (self-upgrading on first request) and all data access.
 import {UserError, checkHours, randomToken, hashPassword, toMonth, currentMonth, isMonth, monthName} from './util.js';
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS meta(key TEXT PRIMARY KEY, value TEXT NOT NULL)`,
@@ -45,6 +45,7 @@ export async function ensureSchema(db) {
       ['server_secret', randomToken(32)],
       ['api_token', randomToken(32)],
       ['session_epoch', '1'],
+      ['client_token', randomToken(24)],   // the client link that shows every company (2)
     ];
     await db.batch(defaults.map(([k, v]) => db.prepare('INSERT OR IGNORE INTO meta(key,value) VALUES(?,?)').bind(k, v)));
     await db.prepare("UPDATE meta SET value=? WHERE key='schema_version'").bind(String(SCHEMA_VERSION)).run();
@@ -216,8 +217,9 @@ export async function deleteEntry(db, id) {
   return {deleted: true, entry: cur};
 }
 
-export async function listEntries(db, {companyId, from, to, q, limit = 2000} = {}) {
+export async function listEntries(db, {companyId, from, to, q, limit = 2000, liveOnly = false} = {}) {
   const where = [], binds = [];
+  if (liveOnly) where.push('c.archived=0');
   if (companyId) { where.push('e.company_id=?'); binds.push(Number(companyId)); }
   if (from) { where.push('e.month>=?'); binds.push(toMonth(from, 'from')); }
   if (to) { where.push('e.month<=?'); binds.push(toMonth(to, 'to')); }
@@ -226,7 +228,7 @@ export async function listEntries(db, {companyId, from, to, q, limit = 2000} = {
   const lim = Math.min(Math.max(Number(limit) || 2000, 1), 5000);
   const [rows, tot] = await db.batch([
     db.prepare(`${ENTRY_SELECT} ${w} ORDER BY e.month DESC, e.id ASC LIMIT ${lim}`).bind(...binds),
-    db.prepare(`SELECT COALESCE(SUM(e.hours),0) AS hours, COUNT(*) AS n FROM entries e ${w}`).bind(...binds),
+    db.prepare(`SELECT COALESCE(SUM(e.hours),0) AS hours, COUNT(*) AS n FROM entries e JOIN companies c ON c.id=e.company_id ${w}`).bind(...binds),
   ]);
   const t = tot.results[0];
   return {entries: rows.results, total_hours: Math.round(t.hours * 100) / 100, count: t.n, truncated: t.n > rows.results.length};

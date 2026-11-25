@@ -1,6 +1,6 @@
 // JSON APIs: /admin/api/* (signed-in admin, same origin) and /api/v1/* (Bearer API token, for scripts).
 import * as db from './db.js';
-import {UserError, json, presetRange, presetLabels, csvCell, randomToken, currentMonth, monthName} from './util.js';
+import {UserError, json, presetRange, presetLabels, csvCell, randomToken, currentMonth, monthName, hashPassword} from './util.js';
 import {signOutEverywhere} from './auth.js';
 import {callTool} from './mcp.js';
 
@@ -12,6 +12,10 @@ function rangeFrom(sp) {
   const preset = sp.get('range');
   if (preset) { const r = presetRange(preset); if (r) return r; }
   return {from: sp.get('from') || '', to: sp.get('to') || ''};
+}
+
+async function clientLink(D, origin) {
+  return {url: `${origin}/r/${await db.getMeta(D, 'client_token')}`, has_password: Boolean(await db.getMeta(D, 'client_password'))};
 }
 
 const companyOut = (c, origin) => ({...c, report_url: `${origin}/r/${c.share_token}`});
@@ -73,6 +77,17 @@ export async function adminApi(req, env, url) {
     await db.setMeta(D, 'api_token', randomToken(32));
     const token = await db.getMeta(D, 'api_token');
     return json({mcp_url: `${url.origin}/mcp/${token}`, api_token: token});
+  }
+  if (path === '/client-link' && m === 'GET') return json(await clientLink(D, url.origin));
+  if (path === '/client-link' && m === 'POST') {
+    const b = await body(req);
+    if (b.new_link) await db.setMeta(D, 'client_token', randomToken(24));
+    if (b.client_password !== undefined) {
+      const p = String(b.client_password || '');
+      if (p && p.length < 6) throw new UserError('Client password must be at least 6 characters');
+      await db.setMeta(D, 'client_password', p ? await hashPassword(p) : '');
+    }
+    return json(await clientLink(D, url.origin));
   }
   if (path === '/settings/sign-out-all' && m === 'POST') { await signOutEverywhere(env); return json({ok: true}); }
 
