@@ -46,8 +46,8 @@ t('right password signs in (username not case sensitive)', ok.status === 303 && 
 const cookie = setc.split(';')[0];
 const H = {Cookie: cookie, Origin: B, 'Content-Type': 'application/json'};
 const page = await (await req('/', {headers: {Cookie: cookie}})).text();
-t('admin page loads', page.includes('VectorPC <span>Work Log</span>') && page.includes('id="entries"'));
-const script = page.match(/<script>([\s\S]*)<\/script>/)[1];
+t('admin page loads with the VectorPC bar', page.includes('class="vpx-bar"') && page.includes('>Work Log</a>') && page.includes('https://app.vectorpc.co.za/') && page.includes('id="entries"'));
+const script = [...page.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]).join(';\n');
 const dir = mkdtempSync(join(tmpdir(), 'wl-'));
 writeFileSync(join(dir, 'c.js'), script);
 let syntax = true;

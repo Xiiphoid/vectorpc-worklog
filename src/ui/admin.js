@@ -1,6 +1,8 @@
 // Admin pages: sign-in and the single-page work log editor (Work, Companies, Import, Settings).
 import {esc} from '../util.js';
 import {client} from './admin.client.js';
+import {vpxBar, VPX_HOME} from '../vpxbar.js';
+import {vpxCss, vpxJs} from '../vpxstyle.js';
 
 const css = `:root{color-scheme:dark;--ink:#f4f4f5;--muted:#a1a1aa;--faint:#71717a;--line:#322f34;--card:#1c1b1e;--card2:#232126;--bg:#131315;--accent:#14c3be;--accent2:#0aa8a4;--red:#fca5a5;--amber:#fcd34d;--green:#6ee7b7;--grad:linear-gradient(135deg,#14c3be,#0aa8a4)}
 *{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
@@ -14,12 +16,14 @@ input,select,textarea{background:var(--bg);border:1px solid #46424a;border-radiu
 textarea{min-height:140px;resize:vertical;line-height:1.5}input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(10,168,164,.16)}
 :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 select option{background:var(--card)}
-.topbar{position:sticky;top:0;z-index:20;background:rgba(19,19,21,.86);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.07);padding:env(safe-area-inset-top) 0 0}
-.topbar .in{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:10px 16px;flex-wrap:wrap}
+.topbar{position:sticky;top:calc(53px + env(safe-area-inset-top, 0px));z-index:20;background:rgba(19,19,21,.86);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.07)}
+.topbar .in{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:8px 16px;flex-wrap:wrap}
+.vpx-slot .signout{font-size:13px}
 .wordmark{font-weight:780;letter-spacing:-.3px;font-size:16px;white-space:nowrap}.wordmark span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 .tabs{display:flex;gap:4px;background:#242226;padding:4px;border-radius:11px;overflow-x:auto;scrollbar-width:none}
 .tabs button{border:0;background:transparent;min-height:34px;padding:6px 13px;font-size:13.5px;border-radius:8px;white-space:nowrap;color:var(--muted)}
 .tabs button[aria-selected=true]{background:var(--card);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.28)}
+.tabs button:focus-visible{outline-offset:-2px}
 .spacer{flex:1}.signout{font-size:13px;color:var(--muted);text-decoration:none}
 main{max-width:1100px;margin:0 auto;padding:18px 16px 70px}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:14px}
@@ -58,10 +62,10 @@ pre{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#2a282d;border:1px solid var(--line);padding:10px 16px;border-radius:10px;font-size:13.5px;z-index:99;box-shadow:0 10px 30px rgba(0,0,0,.4);display:none}
 .login{max-width:380px;margin:12vh auto 0;padding:26px}.login h1{font-size:20px;margin:0 0 4px}.login p{color:var(--muted);margin:0 0 18px;font-size:14px}.login input{margin-bottom:12px}.login button{width:100%}
 @media(max-width:720px){.filters{grid-template-columns:1fr}.entry{gap:4px 12px}
- .company{grid-template-columns:1fr}.company .acts{justify-content:flex-start}.row2{grid-template-columns:1fr}.topbar .in{gap:10px}.tabs{order:3;width:100%}}`;
+ .company{grid-template-columns:1fr}.company .acts{justify-content:flex-start}.row2{grid-template-columns:1fr}.tabs{width:100%}}`;
 
 const head = title => `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#131315"><title>${esc(title)}</title><style>${css}</style></head>`;
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#131315"><title>${esc(title)}</title><style>${css}${vpxCss}</style></head>`;
 
 export function loginPage({error = '', notConfigured = false} = {}) {
   return `${head('Sign in · VectorPC Work Log')}<body><form class="panel login" method="post" action="/login">
@@ -75,9 +79,9 @@ ${error ? `<p class="msg bad">${esc(error)}</p>` : ''}
 
 export function adminPage() {
   return `${head('VectorPC Work Log')}<body>
-<header class="topbar"><div class="in"><div class="wordmark">VectorPC <span>Work Log</span></div>
-<nav class="tabs" role="tablist"><button role="tab" data-tab="work" aria-selected="true">Work</button><button role="tab" data-tab="companies">Companies</button><button role="tab" data-tab="import">Import</button><button role="tab" data-tab="settings">Settings</button></nav>
-<span class="spacer"></span><a class="signout" href="/logout">Sign out</a></div></header>
+${vpxBar({app: 'Work Log', appHref: '/', mark: VPX_HOME + '/assets/icons/mark.svg?v=2', slot: '<a class="signout" href="/logout">Sign out</a>'})}
+<header class="topbar"><div class="in"><nav class="tabs" role="tablist"><button role="tab" data-tab="work" aria-selected="true">Work</button><button role="tab" data-tab="companies">Companies</button><button role="tab" data-tab="import">Import</button><button role="tab" data-tab="settings">Settings</button></nav>
+</div></header>
 <main>
 <section data-view="work">
   <div class="panel filters" id="filters">
@@ -142,5 +146,5 @@ export function adminPage() {
 <div class="df"><span class="left" style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="small" id="pw-clear" hidden>Remove password</button><button type="button" class="small" id="new-link" hidden>New client link</button><button type="button" class="small danger" id="company-del" hidden>Delete</button></span>
 <button value="cancel" formnovalidate>Cancel</button><button class="primary" value="save">Save</button></div></form></dialog>
 <div class="toast" id="toast"></div>
-<script>(${client.toString()})();</script></body></html>`;
+<script>(${client.toString()})();</script><script>${vpxJs}</script></body></html>`;
 }

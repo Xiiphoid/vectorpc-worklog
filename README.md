@@ -18,6 +18,7 @@ app tile all use it.
 
 | Version | Deployed | Notes |
 |---|---|---|
+| r2 | 25 Nov 2026 | The VectorPC bar on top of the admin page (back to the app, Apps menu), as in the other VectorPC apps: `src/vpxbar.js` and `src/vpxstyle.js` are copies of the canonical ones in vectorpc-cloud-panel `manager/` (keep identical). Settings: pick a company and project to fill the Claude instructions in; the instruction with the API key comes first and includes catching up from where the log ends; the connector is an optional closed section. |
 | r1 | 25 Nov 2026 | First version. |
 
 ## Set up (once)
