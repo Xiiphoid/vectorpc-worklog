@@ -1,0 +1,25 @@
+{
+  "name": "vectorpc-worklog",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-07-30",
+  "account_id": "47cf83a3ae957821fa25d3ed7be3f278",
+  "workers_dev": true,
+  "preview_urls": false,
+  // the admin page's browser code is sent with toString(): no __name() wrappers in it
+  "keep_names": false,
+  // keep variables and secrets set in the dashboard when deploying from GitHub
+  "keep_vars": true,
+  "vars": {
+    // the admin username; the password is the encrypted secret ADMIN_PASSWORD (set in the dashboard)
+    "ADMIN_USER": "ricky"
+  },
+  // the VectorPC app (app.vectorpc.co.za): its public key for the tile and sign-in
+  "services": [
+    {"binding": "HUB", "service": "vectorpc-server-manager", "entrypoint": "HubNotify"}
+  ],
+  // no database_id: the first deploy creates the D1 database "vectorpc-worklog" and binds it
+  "d1_databases": [
+    {"binding": "DB", "database_name": "vectorpc-worklog"}
+  ],
+  "observability": {"enabled": true}
+}
