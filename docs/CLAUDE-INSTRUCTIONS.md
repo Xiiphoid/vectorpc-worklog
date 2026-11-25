@@ -29,6 +29,12 @@ After finishing any piece of work in this project, and always after pushing code
   builder with custom questions and a live preview 28 h.
 Before logging, call list_work for this company (range last-3) and do not log anything that is
 already there.
+Catching up: the first time you work in this project in a session, and whenever I say "catch up the
+work log", call list_work for this company (range all). Find where the log ends by matching its newest
+entries' titles to this project's history (git log with dates, pull requests, tickets, changelog, chats).
+Everything finished after that point that is not in the log must be logged the same way. If that is more
+than 5 items, show me a table (month, title, hours, total per month) and wait for my OK, then save them
+with one log_work_bulk call.
 ```
 
 ## 2. Catch-up prompt (run once in the BMS project and once in the Brandchamp project)

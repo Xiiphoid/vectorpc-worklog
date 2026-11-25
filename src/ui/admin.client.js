@@ -219,7 +219,13 @@ After finishing any piece of work in this project, and always after pushing code
   a broken PHP extension after an upgrade 4 h; a new permission with its screens 6 h; a multi-form
   builder with custom questions and a live preview 28 h.
 Before logging, call list_work for this company (range last-3) and do not log anything that is
-already there.`;
+already there.
+Catching up: the first time you work in this project in a session, and whenever I say "catch up the
+work log", call list_work for this company (range all). Find where the log ends by matching its newest
+entries' titles to this project's history (git log with dates, pull requests, tickets, changelog, chats).
+Everything finished after that point that is not in the log must be logged the same way. If that is more
+than 5 items, show me a table (month, title, hours, total per month) and wait for my OK, then save them
+with one log_work_bulk call.`;
     $('#snippet-api').textContent = `## Work log
 Company: <CLIENT COMPANY>
 Project: <PROJECT OR REPO>
@@ -242,7 +248,13 @@ above. Do not ask me first; tell me in one line what you logged.
   the client understands. No passwords, keys, server paths or em dashes.
 - hours: my figure if I give one. Otherwise what a senior developer would need to do the same work by
   hand without AI (understanding, investigating, designing, coding, testing, deploying, checking).
-  Steps of 0.5, minimum 0.5. Never use how long you took.`;
+  Steps of 0.5, minimum 0.5. Never use how long you took.
+Catching up: the first time you work in this project in a session, and whenever I say "catch up the
+work log", call GET /entries for the company (range all). Find where the log ends by matching its newest
+entries' titles to this project's history (git log with dates, pull requests, tickets, changelog, chats).
+Everything finished after that point that is not in the log must be logged the same way. If that is more
+than 5 items, show me a table (month, title, hours, total per month) and wait for my OK, then save them
+with one POST /entries {"entries":[...]} call.`;
     insTpl = {a: $('#snippet').textContent, b: $('#snippet-api').textContent};
     fillIns();
     $('#curl').textContent = `curl -X POST ${s.origin}/api/v1/entries \\
