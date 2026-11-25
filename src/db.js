@@ -227,7 +227,7 @@ export async function listEntries(db, {companyId, from, to, q, limit = 2000, liv
   const w = where.length ? 'WHERE ' + where.join(' AND ') : '';
   const lim = Math.min(Math.max(Number(limit) || 2000, 1), 5000);
   const [rows, tot] = await db.batch([
-    db.prepare(`${ENTRY_SELECT} ${w} ORDER BY e.month DESC, e.id ASC LIMIT ${lim}`).bind(...binds),
+    db.prepare(`${ENTRY_SELECT} ${w} ORDER BY e.month DESC, e.id DESC LIMIT ${lim}`).bind(...binds),
     db.prepare(`SELECT COALESCE(SUM(e.hours),0) AS hours, COUNT(*) AS n FROM entries e JOIN companies c ON c.id=e.company_id ${w}`).bind(...binds),
   ]);
   const t = tot.results[0];

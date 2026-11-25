@@ -18,6 +18,7 @@ app tile all use it.
 
 | Version | Deployed | Notes |
 |---|---|---|
+| r5 | 25 Nov 2026 | Newest work at the top of every list (newest month first, newest item first within a month). |
 | r4 | 25 Nov 2026 | Dashboard like the Excel log, on the Work tab and the client page: totals per company (items, hours, share, average per item; tap a company to see only it) and the five largest items per company (tap to open the item). The list is one line per item (title, company, hours); tap for the details. One client link for every company (Companies tab, optional password, new link), schema 2 (`meta.client_token`). |
 | r3 | 25 Nov 2026 | Nothing about Claude reaches a client: entries from Claude or the API that mention Claude, ChatGPT, Copilot, Codex, AI-generated or a session are refused (`clientSafe` in `src/mcp.js`), the instructions say so, and the admin CSV has no Source column. The VectorPC icons (from the app) as the tab icon, home screen icon, bar and sign-in logo (`src/icons.js`). |
 | r2 | 25 Nov 2026 | The VectorPC bar on top of the admin page (back to the app, Apps menu), as in the other VectorPC apps: `src/vpxbar.js` and `src/vpxstyle.js` are copies of the canonical ones in vectorpc-cloud-panel `manager/` (keep identical). Settings: pick a company and project to fill the Claude instructions in; the instruction with the API key comes first and includes catching up from where the log ends; the connector is an optional closed section. |

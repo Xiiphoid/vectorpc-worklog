@@ -89,6 +89,8 @@ const nov = await api('/entries?from=2026-11&to=2026-11');
 t('a month range filters by billing month', nov.count === 1 && nov.total_hours === 1.5);
 const st = await api('/state');
 t('the filters are named for billing months', /^This month: \w+ \d{4}$/.test(st.labels['this-month']) && /^\d{4}-\d{2}$/.test(st.month));
+const order = await api('/entries?range=all');
+t('newest work is at the top of the list', order.entries.every((e, i, l) => i === 0 || l[i - 1].month > e.month || (l[i - 1].month === e.month && l[i - 1].id > e.id)));
 const csv = await (await req('/admin/api/entries.csv?range=all', {headers: {Cookie: cookie}})).text();
 t('CSV download has the months, rows and a total, no Source column', csv.includes('November 2026,Bulldog Abrasives,1.5,Fixed the sidebar on phones,bulldogerp') && /Total,,3\.75/.test(csv) && !/Source|manual/.test(csv), csv.slice(0, 300));
 

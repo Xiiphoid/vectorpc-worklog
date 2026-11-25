@@ -1,6 +1,6 @@
 // Small shared helpers: responses, escaping, dates, hours, crypto.
 
-export const VERSION = 'r4';
+export const VERSION = 'r5';
 export const TZ = 'Africa/Johannesburg';
 
 const SECURITY_HEADERS = {
